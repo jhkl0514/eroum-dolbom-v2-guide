@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX 개발 이관 가이드 — 이로움돌봄 v2.0</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/suit@v1.0.0/packages/suit/dist/suit.min.css');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --or:#FF8120;--or2:#EE6002;--or-bg:#FFF5E6;--or-mid:#FFE0B2;
+  --bg:#F2F3F5;--surface:#FFF;--surface2:#FAFAFA;
+  --border:#E8E9EC;--border2:#D1D5DB;
+  --text:#111827;--text2:#4B5563;--text3:#9CA3AF;
+  --tc:#0EA5E9;--tc-bg:#EFF9FF;--tc-bd:#BAE6FD;
+  --nav-w:252px;--hh:52px;
+  --r:8px;--r2:5px;
+}
+html{font-family:'SUIT','Apple SD Gothic Neo',sans-serif;font-size:14px;background:var(--bg);color:var(--text);line-height:1.6;-webkit-text-size-adjust:100%}
+
+/* ── TOP BAR ── */
+.topbar{height:var(--hh);background:#111827;display:flex;align-items:center;padding:0 20px;position:fixed;top:0;left:0;right:0;z-index:500;gap:10px}
+.tb-brand{display:flex;align-items:center;gap:7px}
+.tb-pip{width:5px;height:5px;border-radius:50%;background:var(--or)}
+.tb-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:-.2px}
+.tb-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;background:rgba(255,129,32,.15);color:var(--or);letter-spacing:.3px;text-transform:uppercase}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-meta{font-size:11px;color:#6B7280}
+.tb-ver{font-size:11px;font-weight:600;color:var(--or)}
+
+/* ── 검색 ── */
+.search-wrap{position:relative;display:flex;align-items:center}
+.search-input{height:30px;width:200px;padding:0 30px 0 10px;border-radius:5px;border:1px solid #374151;background:#1F2937;color:#fff;font-size:12px;font-family:inherit;outline:none;transition:all .15s}
+.search-input::placeholder{color:#6B7280}
+.search-input:focus{border-color:#4B5563;background:#273040;width:240px}
+.search-clear{position:absolute;right:8px;background:none;border:none;color:#6B7280;cursor:pointer;font-size:14px;padding:0;display:none}
+.search-count{font-size:11px;color:#6B7280;white-space:nowrap}
+.search-nav{display:flex;gap:2px}
+.search-nav button{background:#374151;border:none;color:#9CA3AF;border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center}
+.search-nav button:hover{background:#4B5563;color:#fff}
+.search-highlight{background:#FBBF24;color:#111827;border-radius:2px;padding:0 1px}
+.search-highlight.current{background:#F59E0B;outline:2px solid #F59E0B}
+
+/* ── 메뉴 ── */
+.menu-btn{display:none;background:none;border:none;cursor:pointer;padding:4px;color:#9CA3AF;flex-direction:column;gap:4px;align-items:center;justify-content:center}
+.menu-btn span{display:block;width:18px;height:1.5px;background:currentColor;border-radius:1px;transition:all .2s}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;top:var(--hh);left:0;bottom:0;width:var(--nav-w);background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;z-index:400;transition:transform .25s}
+.sidebar::-webkit-scrollbar{width:3px}.sidebar::-webkit-scrollbar-thumb{background:#E5E7EB;border-radius:2px}
+.sidebar-inner{padding:16px 0 40px}
+.nav-group{margin-bottom:4px}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;padding:12px 18px 4px}
+.nav-item{display:flex;align-items:center;gap:7px;padding:7px 18px;font-size:13px;color:var(--text2);cursor:pointer;text-decoration:none;border:none;border-left:2px solid transparent;background:none;transition:all .1s;line-height:1.4;width:100%;text-align:left;font-family:inherit}
+.nav-item:hover{background:#FFF9F5;color:var(--or);border-left-color:#FFD4A8}
+.nav-item.on{background:var(--or-bg);color:var(--or);font-weight:600;border-left-color:var(--or)}
+.nav-dot{width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.55}
+.nav-divider{height:1px;background:var(--border);margin:8px 18px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:350}
+
+/* ── 업데이트 패널 ── */
+.changelog-btn{background:none;border:none;cursor:pointer;color:#6B7280;font-size:11px;padding:2px 6px;border-radius:3px;font-family:inherit;transition:all .12s;white-space:nowrap}
+.changelog-btn:hover{background:#374151;color:#fff}
+.changelog-panel{position:fixed;top:var(--hh);right:0;width:320px;height:calc(100vh - var(--hh));background:var(--surface);border-left:1px solid var(--border);z-index:450;transform:translateX(100%);transition:transform .25s;overflow-y:auto;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
+.changelog-panel.open{transform:translateX(0)}
+.cl-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cl-title{font-size:15px;font-weight:700;color:var(--text)}
+.cl-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:0}
+.cl-body{padding:20px}
+.cl-entry{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px}
+.cl-entry:last-child{border-bottom:none}
+.cl-date{font-size:11px;font-weight:700;color:var(--tc);margin-bottom:4px;letter-spacing:.3px}
+.cl-ver{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;background:var(--or-bg);color:var(--or2);margin-bottom:8px}
+.cl-items{display:flex;flex-direction:column;gap:4px}
+.cl-item{font-size:12.5px;color:var(--text2);display:flex;align-items:flex-start;gap:6px;line-height:1.5}
+.cl-item::before{content:'·';color:var(--or);flex-shrink:0;font-weight:700}
+.cl-tag{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bg);color:var(--text3);border:1px solid var(--border);flex-shrink:0}
+
+/* ── MAIN ── */
+.main{margin-left:var(--nav-w);margin-top:var(--hh);padding:36px 40px 80px}
+.max{max-width:780px}
+
+/* ── PAGE HEADER ── */
+.pg-head{margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid var(--border2)}
+.pg-eyebrow{font-size:11px;font-weight:700;color:var(--or);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.pg-h1{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.4px;line-height:1.3;margin-bottom:8px}
+.pg-desc{font-size:13px;color:var(--text2);line-height:1.7}
+.pg-chips{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg);color:var(--text2);font-weight:500;border:1px solid var(--border)}
+.chip.grn{background:#D1FAE5;color:#065F46;border-color:#A7F3D0}
+.chip.blu{background:var(--tc-bg);color:var(--tc);border-color:var(--tc-bd)}
+
+/* ── TOC ── */
+.toc-box{background:#111827;border-radius:var(--r);padding:24px 28px;margin-bottom:36px}
+.toc-label{font-size:10px;font-weight:700;color:#52525B;letter-spacing:.7px;text-transform:uppercase;margin-bottom:14px}
+.toc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 20px}
+.toc-link{display:flex;align-items:baseline;gap:8px;padding:7px 0;font-size:12.5px;color:#D4D4D8;cursor:pointer;text-decoration:none;border:none;border-bottom:1px solid #27272A;background:none;transition:color .12s;font-family:inherit;width:100%;text-align:left}
+.toc-link:hover{color:var(--or)}
+.toc-n{font-size:11px;color:#52525B;font-weight:600;width:16px;flex-shrink:0}
+
+/* ── SECTION ── */
+.sec{margin-bottom:52px;scroll-margin-top:calc(var(--hh) + 16px)}
+.sec-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--or-bg);color:var(--or2);margin-bottom:10px}
+.sec-h2{font-size:21px;font-weight:700;color:var(--text);letter-spacing:-.35px;margin-bottom:5px}
+.sec-desc{font-size:12.5px;color:var(--text2);margin-bottom:16px;line-height:1.7}
+.sec-hr{height:1px;background:var(--border2);margin-bottom:18px}
+
+/* ── COMMON LIST ── */
+.clist{background:#F5F1E9;border-radius:var(--r);padding:18px 22px;margin-bottom:14px}
+.clist-title{font-size:11px;font-weight:700;color:#7A3D00;letter-spacing:.3px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #F4C9A0}
+.clist-items{display:flex;flex-direction:column;gap:3px}
+.clist-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text);padding:2px 0;line-height:1.5}
+.clist-item::before{content:'';width:3px;height:3px;border-radius:50%;background:#CC6600;flex-shrink:0;margin-top:6px}
+
+/* ── ACCORDION ── */
+.acc{border-radius:var(--r);border:1px solid var(--border);overflow:hidden;background:var(--surface);margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.acc-hd{display:flex;align-items:center;gap:9px;padding:13px 17px;background:var(--surface);border-bottom:1px solid var(--border)}
+.acc-bar{width:3px;height:18px;background:var(--or);border-radius:2px;flex-shrink:0}
+.acc-title{font-size:14.5px;font-weight:600;color:var(--text);flex:1;line-height:1.4}
+.acc-tag{font-size:10.5px;padding:2px 8px;border-radius:3px;background:var(--or-bg);color:var(--or2);font-weight:600;flex-shrink:0}
+.acc-tc{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--tc-bg);color:var(--tc);font-weight:600;border:1px solid var(--tc-bd);flex-shrink:0}
+.acc-body{background:var(--surface2)}
+
+/* ── SUB ── */
+.sub{border-bottom:1px solid var(--border);padding:13px 17px 13px 28px}
+.sub:last-child{border-bottom:none}
+.sub-hd{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.sub-dot{width:3px;height:3px;border-radius:50%;background:var(--or);flex-shrink:0}
+.sub-title{font-size:13px;font-weight:600;color:var(--text)}
+.rows{display:flex;flex-direction:column;gap:4px}
+.row{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.6;color:var(--text2)}
+.row-icon{width:12px;height:12px;border-radius:50%;background:var(--or-bg);border:1px solid var(--or-mid);flex-shrink:0;margin-top:3px}
+.lbl{font-weight:600;color:var(--text);flex-shrink:0}
+.notice{display:flex;align-items:flex-start;gap:7px;padding:8px 10px;background:#FEF3C7;border-radius:var(--r2);border:1px solid #FDE68A;font-size:12.5px;color:#92400E;margin-top:6px;line-height:1.55}
+.info{display:flex;align-items:flex-start;gap:7px;padding:8px 10px;background:#EFF6FF;border-radius:var(--r2);border:1px solid #BFDBFE;font-size:12.5px;color:#1D4ED8;margin-top:6px;line-height:1.55}
+.tc-note{display:flex;align-items:flex-start;gap:7px;padding:8px 10px;background:var(--tc-bg);border-radius:var(--r2);border:1px solid var(--tc-bd);font-size:12.5px;color:#0369A1;margin-top:6px;line-height:1.55}
+.cd{font-family:'JetBrains Mono','Fira Mono',monospace;font-size:11.5px;background:#F3F4F6;padding:1px 5px;border-radius:3px;color:#374151;border:1px solid var(--border2)}
+.flow{font-size:11.5px;font-weight:600;color:var(--text2);background:#F3F4F6;padding:3px 8px;border-radius:var(--r2);border:1px solid var(--border2);display:inline-block;margin-bottom:10px}
+
+/* ── TABLE ── */
+.spec-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+.spec-table th{background:#111827;color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:11px}
+.spec-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;line-height:1.5}
+.spec-table tr:last-child td{border-bottom:none}
+.spec-table tr:nth-child(even) td{background:#FAFAFA}
+.spec-table td code{font-family:monospace;font-size:11px;background:#F3F4F6;padding:1px 4px;border-radius:3px;color:#374151}
+
+/* ── FOOTER ── */
+.footer{border-top:1px solid var(--border);padding:18px 40px;margin-left:var(--nav-w);background:var(--surface);font-size:11.5px;color:var(--text3)}
+
+/* ── 검색 하이라이트 ── */
+mark.sh{background:#FEF08A;color:#111827;border-radius:2px;padding:0 1px}
+mark.sh.cur{background:#F59E0B;outline:2px solid #F59E0B;border-radius:2px}
+
+/* ── ANIM ── */
+.sec{opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s}
+.sec.vis{opacity:1;transform:none}
+
+/* ── RESPONSIVE ── */
+@media (max-width:900px){
+  .search-input{width:140px}
+  .search-input:focus{width:160px}
+}
+@media (max-width:768px){
+  :root{--nav-w:252px}
+  .menu-btn{display:flex}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .overlay.open{display:block}
+  .main{margin-left:0;padding:24px 20px 60px}
+  .footer{margin-left:0;padding:16px 20px}
+  .toc-grid{grid-template-columns:repeat(2,1fr)}
+  .pg-h1{font-size:22px}
+  .sec-h2{font-size:18px}
+  .search-wrap{display:none}
+  .search-count,.search-nav{display:none}
+  .changelog-panel{width:100%}
+}
+@media (max-width:480px){
+  .toc-grid{grid-template-columns:1fr}
+  .main{padding:20px 16px 60px}
+}
+@media print{
+  .sidebar,.topbar,.footer,.changelog-panel{display:none}
+  .main{margin:0;padding:16px}
+  .sec{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
+  <div class="tb-brand"><div class="tb-pip"></div><span class="tb-title">이로움돌봄</span></div>
+  <span class="tb-badge">Dev Guide</span>
+  <!-- 검색 -->
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" type="text" placeholder="내용 검색...">
+    <button class="search-clear" id="searchClear">✕</button>
+  </div>
+  <span class="search-count" id="searchCount"></span>
+  <div class="search-nav" id="searchNav" style="display:none">
+    <button onclick="moveMatch(-1)">▲</button>
+    <button onclick="moveMatch(1)">▼</button>
+  </div>
+  <div class="tb-right">
+    <button class="changelog-btn" onclick="toggleChangelog()">업데이트 이력</button>
+    <span class="tb-meta">2026.05.22</span>
+    <span class="tb-ver">v2.2</span>
+  </div>
+</div>
+
+<!-- 업데이트 이력 패널 -->
+<div class="changelog-panel" id="changelogPanel">
+  <div class="cl-header">
+    <span class="cl-title">업데이트 이력</span>
+    <button class="cl-close" onclick="toggleChangelog()">✕</button>
+  </div>
+  <div class="cl-body">
+    <div class="cl-entry">
+      <div class="cl-date">2026.05.22</div>
+      <div class="cl-ver">v2.2</div>
+      <div class="cl-items">
+        <div class="cl-item"><span class="cl-tag">NEW</span>반품/AS 신청 섹션 추가 (복지용구 주문 하단)</div>
+        <div class="cl-item"><span class="cl-tag">알림</span>어르신별 셀렉트박스, 썸네일 UI, 앱 뱃지 카운트 추가</div>
+        <div class="cl-item"><span class="cl-tag">알림</span>아이콘 유형 업데이트 (반품/AS 추가)</div>
+        <div class="cl-item"><span class="cl-tag">구조</span>섹션 순서 변경 — 기타 맨 아래, 장기요양이 기타 위로</div>
+      </div>
+    </div>
+    <div class="cl-entry">
+      <div class="cl-date">2026.05.20</div>
+      <div class="cl-ver">v2.1</div>
+      <div class="cl-items">
+        <div class="cl-item"><span class="cl-tag">공통</span>화면 전환 5가지 타입 수치 추가 (Fade 150ms, 슬라이드 300ms 등)</div>
+        <div class="cl-item"><span class="cl-tag">공통</span>바텀시트 핸들 삭제, 최대 높이 공식, 닫기 3가지 방법 추가</div>
+        <div class="cl-item"><span class="cl-tag">공통</span>Toast 스펙 / X버튼 / 플로팅 버튼 3가지 타입 추가</div>
+        <div class="cl-item"><span class="cl-tag">공통</span>스크롤바 상세 스펙 추가</div>
+        <div class="cl-item"><span class="cl-tag">공통</span>폰트 배율 클리핑 / 고정 대상 / 360px 이하 정책 추가</div>
+        <div class="cl-item"><span class="cl-tag">홈</span>개인화 영역 4가지 분기 / 퀵메뉴 / 알림 뱃지 추가</div>
+        <div class="cl-item"><span class="cl-tag">앱실행</span>뒤로가기 Toast / 로그인 버튼 분기 / 수급자 우선 선택 추가</div>
+        <div class="cl-item"><span class="cl-tag">복지용구</span>플로팅 배너-BottomNavigation 연동 타이밍 보완</div>
+        <div class="cl-item"><span class="cl-tag">알림</span>읽음 처리 / Empty State / 딥링크 / 페이징 / 90일 삭제 추가</div>
+        <div class="cl-item"><span class="cl-tag">더보기</span>말줄임 / 알림 설정 토스트 / 비로그인 분기 추가</div>
+        <div class="cl-item"><span class="cl-tag">기능</span>검색 기능 추가</div>
+        <div class="cl-item"><span class="cl-tag">기능</span>업데이트 이력 패널 추가</div>
+      </div>
+    </div>
+    <div class="cl-entry">
+      <div class="cl-date">2026.04.02</div>
+      <div class="cl-ver">v2.0</div>
+      <div class="cl-items">
+        <div class="cl-item">Figma MCP 12개 프레임 직접 추출, 초안 작성</div>
+        <div class="cl-item">반응형 레이아웃, 사이드바, 목차 링크 구성</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-inner">
+    <div class="nav-group">
+      <div class="nav-group-label">공통 가이드</div>
+      <button class="nav-item on" onclick="scrollToSec('common');closeMenu()"><span class="nav-dot"></span>앱 전체 공통 사항</button>
+      <button class="nav-item" onclick="scrollToSec('transition');closeMenu()"><span class="nav-dot"></span>화면 전환 & 인터랙션</button>
+      <button class="nav-item" onclick="scrollToSec('popup');closeMenu()"><span class="nav-dot"></span>팝업 & 바텀시트</button>
+      <button class="nav-item" onclick="scrollToSec('loading');closeMenu()"><span class="nav-dot"></span>로딩 유형</button>
+      <button class="nav-item" onclick="scrollToSec('floating');closeMenu()"><span class="nav-dot"></span>플로팅 버튼</button>
+      <button class="nav-item" onclick="scrollToSec('scrollbar');closeMenu()"><span class="nav-dot"></span>스크롤바</button>
+      <button class="nav-item" onclick="scrollToSec('resolution');closeMenu()"><span class="nav-dot"></span>해상도별 대응</button>
+      <button class="nav-item" onclick="scrollToSec('font');closeMenu()"><span class="nav-dot"></span>폰트 & 타이포그래피</button>
+      <button class="nav-item" onclick="scrollToSec('haptic');closeMenu()"><span class="nav-dot"></span>햅틱 기능</button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-group">
+      <div class="nav-group-label">화면별 가이드</div>
+      <button class="nav-item" onclick="scrollToSec('splash');closeMenu()"><span class="nav-dot"></span>앱 실행 / 스플래시</button>
+      <button class="nav-item" onclick="scrollToSec('login');closeMenu()"><span class="nav-dot"></span>로그인 · 회원가입</button>
+      <button class="nav-item" onclick="scrollToSec('home');closeMenu()"><span class="nav-dot"></span>홈 화면</button>
+      <button class="nav-item" onclick="scrollToSec('consult');closeMenu()"><span class="nav-dot"></span>상담하기</button>
+      <button class="nav-item" onclick="scrollToSec('family');closeMenu()"><span class="nav-dot"></span>가족관리 / 상담관리</button>
+      <button class="nav-item" onclick="scrollToSec('welfare');closeMenu()"><span class="nav-dot"></span>복지용구 주문</button>
+      <button class="nav-item" onclick="scrollToSec('returns');closeMenu()"><span class="nav-dot"></span>반품/AS 신청 <span style="font-size:9px;background:#FF8120;color:#fff;padding:1px 5px;border-radius:3px;margin-left:2px;font-weight:700">NEW</span></button>
+      <button class="nav-item" onclick="scrollToSec('facility');closeMenu()"><span class="nav-dot"></span>시설찾기 / 계산기</button>
+      <button class="nav-item" onclick="scrollToSec('more');closeMenu()"><span class="nav-dot"></span>더보기</button>
+      <button class="nav-item" onclick="scrollToSec('cs');closeMenu()"><span class="nav-dot"></span>고객센터 / 어르신복지</button>
+      <button class="nav-item" onclick="scrollToSec('notice');closeMenu()"><span class="nav-dot"></span>알림 <span style="font-size:9px;background:#FF8120;color:#fff;padding:1px 5px;border-radius:3px;margin-left:2px;font-weight:700">NEW</span></button>
+      <button class="nav-item" onclick="scrollToSec('ltc');closeMenu()"><span class="nav-dot"></span>장기요양 가이드</button>
+      <button class="nav-item" onclick="scrollToSec('etc');closeMenu()"><span class="nav-dot"></span>기타 (오류 / 로딩)</button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+<div class="max">
+
+  <!-- PAGE HEADER -->
+  <div class="pg-head">
+    <div class="pg-eyebrow">이로움돌봄 APP · Figma MCP + TC 검증 반영</div>
+    <h1 class="pg-h1">UI/UX 개발 이관 가이드</h1>
+    <p class="pg-desc">[리뉴얼 2.0] 화면설계서 기반 개발팀 핸드오프 문서. Figma MCP 12개 프레임 직접 추출 + UI/UX TC v1 검증 내용 반영.</p>
+    <div class="pg-chips">
+      <span class="chip">담당: 이진희</span>
+      <span class="chip">이로움돌봄 2.0</span>
+      <span class="chip grn">Figma 직접 추출</span>
+      <span class="chip blu">TC 검증 내용 반영</span>
+      <span class="chip">v2.2 · 2026.05.22</span>
+    </div>
+    <div class="tc-note" style="margin-top:12px"><span>🔵</span> <strong>TC 확인</strong> 뱃지가 붙은 항목은 UI/UX TC v1(2026.02.23) 기능 테스트를 통해 검증된 스펙입니다. Figma 설계 기준 외에 실제 동작 검증값이 추가된 항목이에요.</div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc-box">
+    <div class="toc-label">목차</div>
+    <div class="toc-grid">
+      <button class="toc-link" onclick="scrollToSec('common')"><span class="toc-n">01</span>앱 전체 공통</button>
+      <button class="toc-link" onclick="scrollToSec('splash')"><span class="toc-n">07</span>앱 실행 / 스플래시</button>
+      <button class="toc-link" onclick="scrollToSec('facility')"><span class="toc-n">13</span>시설찾기</button>
+      <button class="toc-link" onclick="scrollToSec('transition')"><span class="toc-n">02</span>화면 전환</button>
+      <button class="toc-link" onclick="scrollToSec('login')"><span class="toc-n">08</span>로그인 · 회원가입</button>
+      <button class="toc-link" onclick="scrollToSec('more')"><span class="toc-n">14</span>더보기</button>
+      <button class="toc-link" onclick="scrollToSec('popup')"><span class="toc-n">03</span>팝업 & 바텀시트</button>
+      <button class="toc-link" onclick="scrollToSec('home')"><span class="toc-n">09</span>홈 화면</button>
+      <button class="toc-link" onclick="scrollToSec('cs')"><span class="toc-n">15</span>고객센터</button>
+      <button class="toc-link" onclick="scrollToSec('loading')"><span class="toc-n">04</span>로딩 유형</button>
+      <button class="toc-link" onclick="scrollToSec('consult')"><span class="toc-n">10</span>상담하기</button>
+      <button class="toc-link" onclick="scrollToSec('notice')"><span class="toc-n">16</span>알림</button>
+      <button class="toc-link" onclick="scrollToSec('floating')"><span class="toc-n">05</span>플로팅 버튼</button>
+      <button class="toc-link" onclick="scrollToSec('family')"><span class="toc-n">11</span>가족관리</button>
+      <button class="toc-link" onclick="scrollToSec('etc')"><span class="toc-n">17</span>기타 / 오류</button>
+      <button class="toc-link" onclick="scrollToSec('resolution')"><span class="toc-n">06</span>해상도 / 폰트</button>
+      <button class="toc-link" onclick="scrollToSec('welfare')"><span class="toc-n">12</span>복지용구</button>
+      <button class="toc-link" onclick="scrollToSec('ltc')"><span class="toc-n">18</span>장기요양</button>
+    </div>
+  </div>
+
+  <!-- ══ 공통 사항 ══ -->
+  <div class="sec vis" id="common">
+    <div class="sec-badge">공통</div>
+    <h2 class="sec-h2">앱 전체 공통 사항</h2>
+    <div class="sec-hr"></div>
+    <div class="clist">
+      <div class="clist-title">공통 가이드 항목</div>
+      <div class="clist-items">
+        <div class="clist-item">화면 전환 및 인터랙션 가이드 (5가지 타입)</div>
+        <div class="clist-item">팝업 (Default Popup / Toast Popup)</div>
+        <div class="clist-item">Bottom Sheet 인터랙션 — v2.0 핸들 삭제 변경</div>
+        <div class="clist-item">버튼 Pressed 효과</div>
+        <div class="clist-item">이미지 추출 규격</div>
+        <div class="clist-item">시스템 폰트 배율 가이드 (1.5 클리핑, 특정 위젯 1.0 고정)</div>
+        <div class="clist-item">텍스트 말줄임 규칙</div>
+        <div class="clist-item">로딩 유형별 사용 기준 (Skeleton / Spinner / 전체 로딩)</div>
+        <div class="clist-item">하단 네비게이션</div>
+        <div class="clist-item">텍스트 필드 X(clear) 버튼 — Fade in/out 150ms</div>
+        <div class="clist-item">키보드 노출 시 입력 필드 가림 방지</div>
+        <div class="clist-item">플로팅 버튼 3가지 타입 (Type A / B / C)</div>
+        <div class="clist-item">스크롤바 스펙 — 4px, pill, 디바이스 오른쪽 끝</div>
+        <div class="clist-item">햅틱 기능</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 화면 전환 ══ -->
+  <div class="sec" id="transition">
+    <div class="sec-badge">공통 · 인터랙션</div>
+    <h2 class="sec-h2">화면 전환 — 5가지 타입</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">화면 전환 타입별 스펙</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <table class="spec-table">
+            <thead><tr><th>타입</th><th>적용 화면</th><th>애니메이션</th><th>Scrim</th></tr></thead>
+            <tbody>
+              <tr><td><strong>탭 전환</strong></td><td>하단 탭바 탭 전환</td><td>Fade <span class="cd">150ms</span> (슬라이드 없음, 잔상 없음)</td><td>없음</td></tr>
+              <tr><td><strong>서브 페이지</strong></td><td>일반 페이지 진입 / 뒤로가기</td><td>진입: 우→좌 <span class="cd">300ms ease-out</span> / 뒤로: 좌→우 <span class="cd">300ms</span></td><td>없음</td></tr>
+              <tr><td><strong>풀스크린 팝업</strong></td><td>시설찾기 필터 등 전체 팝업</td><td>오픈: 하→상 <span class="cd">300ms</span> / 닫기: 상→하 <span class="cd">300ms</span></td><td>#000000 60%</td></tr>
+              <tr><td><strong>모달 (Alert)</strong></td><td>삭제 확인 등 모달 팝업</td><td>Fade + Scale <span class="cd">200ms</span></td><td>60%</td></tr>
+              <tr><td><strong>바텀시트</strong></td><td>어르신 선택, 필터 등</td><td>오픈: 하→상 <span class="cd">300ms ease-out</span> / 닫기: 상→하 <span class="cd">300ms</span></td><td>#000000 60%</td></tr>
+            </tbody>
+          </table>
+          <div class="notice" style="margin-top:8px">⚠ 웹뷰 화면도 동일 기준 적용. 뒤로가기(&lt;) 버튼 있음 → 슬라이드 / 없음 → Fade 150ms</div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">버튼 Pressed 효과</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>터치 시 배경 투명도 변화 + 살짝 스케일 감소</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">Flutter:</span> <span class="cd">InkWell</span> / <span class="cd">GestureDetector</span> 활용</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">X(clear) 버튼 스펙</span><span class="acc-tc" style="font-size:10px;margin-left:8px">TC 확인</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">노출:</span> 1자 이상 입력 시 Fade in <span class="cd">150ms</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">X탭 동작:</span> 입력값 전체 삭제 → Fade out <span class="cd">150ms</span> → 포커스 유지 (키보드 내려가지 않음)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">미노출 조건:</span> 빈 상태 / Disabled</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 팝업 & 바텀시트 ══ -->
+  <div class="sec" id="popup">
+    <div class="sec-badge">공통 · 컴포넌트</div>
+    <h2 class="sec-h2">팝업 & Bottom Sheet</h2>
+    <div class="sec-hr"></div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">Toast 팝업 스펙</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">너비:</span> 디바이스 <span class="cd">80%</span>, 하단 패딩 <span class="cd">24px</span></div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">애니메이션:</span> Fade in <span class="cd">200ms</span> → <span class="cd">3초</span> 유지 → Fade out <span class="cd">200ms</span></div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">소멸 후:</span> 레이아웃 정상 복원</div>
+      </div></div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">Bottom Sheet — v2.0 변경사항</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">핵심 변경 (v2.0)</span></div>
+          <div class="notice">⚠ 핸들(Handle) UI v2.0에서 전면 삭제 — 드래그 높이 조절 불가</div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">최대 높이</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>최대 높이 = 디바이스 높이 <span class="cd">- (56px + System Navigation 높이)</span></div>
+            <div class="row"><div class="row-icon"></div>초과 시 내부 스크롤 활성화</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">닫기 3가지 방법</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">iOS:</span> Swipe down 제스처</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">Android:</span> Back 버튼 탭</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">공통:</span> Scrim 영역 탭 (닫힌 후 배경 화면 정상 복원)</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">기타</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">오픈 시:</span> 하단 탭바 미노출 (시스템 네비게이션만 표시)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">상단 패딩:</span> <span class="cd">32px</span> 통일 (핸들바 제거 이후 기준)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 로딩 ══ -->
+  <div class="sec" id="loading">
+    <div class="sec-badge">공통 · 로딩</div>
+    <h2 class="sec-h2">로딩 유형별 사용 기준</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">로딩 3가지 유형</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <table class="spec-table">
+            <thead><tr><th>유형</th><th>사용 상황</th><th>스펙</th></tr></thead>
+            <tbody>
+              <tr><td><strong>전체 로딩</strong></td><td>복잡한 처리 (상담 신청 제출 등)</td><td>브랜드 Lottie 애니메이션 + Scrim <span class="cd">rgba(0,0,0,0.6)</span> / 터치 입력 차단 / 완료 후 자동 해제</td></tr>
+              <tr><td><strong>Skeleton UI</strong></td><td>목록/카드형 최초 진입</td><td>카드 형태 스켈레톤 / 좌→우 shimmer 그라데이션 / 실제 콘텐츠와 동일 위치·크기 / 완료 시 자연스럽게 교체</td></tr>
+              <tr><td><strong>Spinner</strong></td><td>무한스크롤 추가 로딩</td><td>Lottie 스피너 <span class="cd">40×40px</span> 중앙정렬 / "불러오는 중" 텍스트 / 완료 후 사라짐</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">하단 네비게이션</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>탭 전환 시 콘텐츠 교체 (전체 화면 전환 아님)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">활성 탭:</span> 오렌지 <span class="cd">#FF8120</span> 아이콘 + 라벨</div>
+            <div class="row"><div class="row-icon"></div>Safe Area bottom 패딩 적용 필수</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">라벨 최소 폰트:</span> <span class="cd">12px</span> (오토사이즈 적용, 최솟값 12px 고정)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 플로팅 버튼 ══ -->
+  <div class="sec" id="floating">
+    <div class="sec-badge">공통 · 컴포넌트</div>
+    <h2 class="sec-h2">플로팅 버튼 — 3가지 타입</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">플로팅 버튼 타입 정의</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <table class="spec-table">
+            <thead><tr><th>타입</th><th>동작</th><th>적용 화면</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Type A</strong></td><td>화면 진입 시 즉시 노출, 스크롤 무관 항상 고정, Slide 애니메이션 없음</td><td>회원가입 프로세스 (LO_012)</td></tr>
+              <tr><td><strong>Type B</strong></td><td>600px 미만 스크롤: 숨김 / 600px 이상: Slide Up <span class="cd">300ms</span> 노출 / 상단 복귀: Slide Down <span class="cd">300ms</span></td><td>상담하기 서브메인 (CO_001)</td></tr>
+              <tr><td><strong>Type C</strong></td><td>탭 Sticky 시점과 플로팅 버튼 동시 Slide Up <span class="cd">300ms</span> / 스크롤 복귀 시 Slide Down</td><td>시설 상세 (CE_004)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">공통 노출 기준</span><span class="acc-tc" style="font-size:10px;margin-left:8px">TC 확인</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">최상단:</span> 미노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">아래 스크롤 시작 즉시:</span> Fade In <span class="cd">150ms</span> 노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">위 스크롤:</span> 노출 유지</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">최상단 복귀:</span> Fade Out <span class="cd">150ms</span> 미노출</div>
+          </div>
+          <div class="notice" style="margin-top:6px">⚠ WE_001 잔여급여 플로팅 배너는 별도 정책 유지 (복지용구 섹션 참조)</div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">그라데이션</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>플로팅 버튼 영역 상단에 화이트 투명 그라데이션 일괄 적용</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 스크롤바 ══ -->
+  <div class="sec" id="scrollbar">
+    <div class="sec-badge">공통 · 스크롤바</div>
+    <h2 class="sec-h2">스크롤바 스펙</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">스크롤바 디자인 & 인터랙션</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">디자인</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">너비:</span> <span class="cd">4px</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">모양:</span> Border-radius <span class="cd">100px</span> (pill)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">위치:</span> 디바이스 오른쪽 끝, 오른쪽 여백 <span class="cd">4px</span>, Track 투명 처리</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">기본 색상:</span> <span class="cd">#111111 40%</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">드래그 중:</span> <span class="cd">#111111 55%</span> → 드래그 종료: <span class="cd">40%</span> 복귀</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">인터랙션</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>화면 진입 시 미노출 → 스크롤 시작 시 노출</div>
+            <div class="row"><div class="row-icon"></div>스크롤 종료 후 <span class="cd">0.8초</span> 대기 → <span class="cd">0.3초</span> Fade out</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">적용 범위 / 미적용</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">적용:</span> 일반 서브 페이지 전체, 복지용구·시설찾기 목록·가족관리·더보기, 바텀시트 콘텐츠 영역(헤더 제외), 풀팝업 전체</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">미적용:</span> 홈(HO_001), 시설찾기 지도뷰</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 해상도 / 폰트 ══ -->
+  <div class="sec" id="resolution">
+    <div class="sec-badge">레이아웃 · 폰트</div>
+    <h2 class="sec-h2">해상도별 대응 방식 & 폰트 배율</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">해상도별 대응</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <table class="spec-table">
+            <thead><tr><th>범위</th><th>대응 방식</th></tr></thead>
+            <tbody>
+              <tr><td>360px 미만</td><td>미지원 (레이아웃 틀어짐 허용), 개발 우선순위 낮음</td></tr>
+              <tr><td>360px ~ 600px</td><td>반응형 / 콘텐츠 고정값 유지 / 좌우 여백 <span class="cd">20px</span> 고정 / 화면 넓어지면 여백만 늘어남</td></tr>
+              <tr><td>600px 초과 (태블릿)</td><td>콘텐츠 <span class="cd">600px</span> 고정 · 중앙 배치 / 좌우 여백 <span class="cd">#E8E8E8</span> / 가로 모드 세로 고정</td></tr>
+            </tbody>
+          </table>
+          <div class="notice" style="margin-top:6px">⚠ Safe Area 대응: 상단 시스템 네비게이션 영역 콘텐츠 침범 없음</div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">폰트 배율 정책</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">1.5 클리핑:</span> 시스템 폰트 배율 1.5 초과 설정 시 앱 내 폰트는 <strong>1.5로 상한 고정</strong> (레이아웃 파괴 없음)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">1.0 고정 대상:</span> 가격 텍스트 / 상품 카드 내 텍스트 / 테이블·그리드 셀 텍스트 — 배율 적용 없이 1.0 고정</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">360px 이하 기기:</span> 시스템 설정 무관 폰트 배율 <strong>1.0 고정</strong> (갤럭시 Z Fold 접힌 화면 포함)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">전체 원칙:</span> 레이아웃 파괴(겹침·잘림) 없음 / 고정높이 → <span class="cd">min-height</span>로 늘어남 허용</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 폰트 & 타이포그래피 ══ -->
+  <div class="sec" id="font">
+    <div class="sec-badge">타이포그래피</div>
+    <h2 class="sec-h2">폰트 사양 — Design Token</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">SUIT 폰트 토큰 정의</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>토큰명</th><th>Size</th><th>Weight</th><th>Line Height</th><th>Letter Spacing</th><th>용도</th></tr></thead>
+          <tbody>
+            <tr><td>Heading/XL</td><td>32px</td><td>Bold 700</td><td>42px</td><td>-0.2px</td><td>섹션 대제목</td></tr>
+            <tr><td>Heading/SM</td><td>22px</td><td>Bold 700</td><td>32px</td><td>-0.2px</td><td>소제목</td></tr>
+            <tr><td>Body/MD/SemiBold</td><td>18px</td><td>SemiBold 600</td><td>27px</td><td>-0.15px</td><td>아코디언 헤더</td></tr>
+            <tr><td>Body/SM/Regular</td><td>16px</td><td>Regular 400</td><td>24px</td><td>-0.15px</td><td>본문</td></tr>
+            <tr><td>Body/SM/SemiBold</td><td>16px</td><td>SemiBold 600</td><td>24px</td><td>-0.15px</td><td>강조 레이블</td></tr>
+          </tbody>
+        </table>
+        <div class="tc-note" style="margin-top:8px"><span>🔵</span> <strong>폰트 두께 수정 이력 (TC 확인)</strong> — Semibold: <span class="cd">600</span> (구 700→수정) / Bold: <span class="cd">700</span> (구 800→수정) / 800 값 미사용</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ══ 햅틱 ══ -->
+  <div class="sec" id="haptic">
+    <div class="sec-badge">인터랙션</div>
+    <h2 class="sec-h2">햅틱 기능 가이드</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">Flutter HapticFeedback 사용 기준</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>강도</th><th>트리거 상황</th><th>Flutter API</th></tr></thead>
+          <tbody>
+            <tr><td>가벼운 진동</td><td>알림 설정 스위치 on/off, 탭 선택 변경</td><td><code>HapticFeedback.lightImpact()</code></td></tr>
+            <tr><td>중간 진동</td><td>복지용구 탭 당겨서 새로고침</td><td><code>HapticFeedback.mediumImpact()</code></td></tr>
+            <tr><td>오류 진동</td><td>입력값 오류 발생 시</td><td><code>HapticFeedback.heavyImpact()</code></td></tr>
+          </tbody>
+        </table>
+        <div class="notice" style="margin-top:8px">⚠ 상품 옵션 선택, 핀치줌 경계, 장바구니 담기, 등록·가입 완료는 이번 배포에서 제외</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ══ 스플래시 ══ -->
+  <div class="sec" id="splash">
+    <div class="sec-badge">앱 실행</div>
+    <h2 class="sec-h2">앱 실행 / 스플래시 화면</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.16 · 프레임: UI/UX 개발 이관 가이드_앱실행</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">스플래시 로고 애니메이션</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">이로움 텍스트:</span> Fade In / Delay 0.2s / Duration 0.4s / Opacity 0 → 1</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">쉼표(돌봄) 로고:</span> Jump Motion + Fade In<br><span style="padding-left:16px;display:block">Y 이동값: 0 → -10 → 0 → -5 → 0 → -2 → 0</span><span style="padding-left:16px;display:block">Duration: 0.6s / Delay: 1.2s / Ease: <span class="cd">cubic-bezier(0.34, 1.56, 0.64, 1)</span></span><span style="padding-left:16px;display:block">Opacity: 0 → 1 (0.6초 delay, 0.3초간 페이드인)</span></div>
+            <div class="row"><div class="row-icon"></div>전체 애니메이션은 로고가 자연스럽게 튀어 오르는 느낌으로 가볍게 표현</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">하단 이미지 애니메이션</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">타이밍:</span> 1.5초 delay 후 시작</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">동작:</span> 아래에서 위로 슬라이드업 + 페이드인 / Y축 <span class="cd">+80px → 0</span> / Duration 1.0s</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">Ease:</span> <span class="cd">cubic-bezier(0.25, 0.1, 0.25, 1)</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">≤420px:</span> <span class="cd">calc(100%-40px)</span> / 좌측 여백 20px</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">&gt;420px:</span> <span class="cd">80%</span> / 좌측 여백 10%</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">위치 오프셋:</span> 하단 -20px / <span class="cd">object-bottom</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">앱 실행 → 홈 진입 분기</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">비로그인:</span> 비로그인 홈 진입 / "지금 로그인하세요" 노출 / 개인화 영역 미노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">로그인 + 수급자:</span> 수급자 홈 / 남은 급여 금액 / 맞춤상품</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">수급자 + 예비수급자 복수:</span> <strong>수급자 어르신 자동 선택</strong> (예비수급자 아닌 수급자 우선)</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">홈 뒤로가기 Toast</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">문구:</span> "버튼을 한 번 더 누르면 앱이 종료됩니다"</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">3초 이내 재탭:</span> 앱 <strong>백그라운드 전환</strong> (완전 종료 아님)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 로그인/회원가입 ══ -->
+  <div class="sec" id="login">
+    <div class="sec-badge">로그인 · 회원가입</div>
+    <h2 class="sec-h2">로그인 · 상담 · 회원가입 · 어르신위임</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.16 · 프레임: UI/UX 개발 이관 가이드_앱실행</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">로그인 화면 — 버튼 분기</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">[둘러보기] 노출:</span> 온보딩 이후 / 사업소 초대코드 이후 / 스플래시 자동로그인 실패 이후</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">[X 닫기] 노출:</span> 위 3가지 외 앱 내에서 로그인 화면으로 이동하는 모든 경우</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">약관 동의 — 야간 혜택 연동</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">야간 혜택 동의 체크 시:</span> 마케팅(앱푸시·문자·메일) <strong>자동 체크</strong></div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">토스트:</span> "야간 혜택 동의로 이벤트 및 마케팅 정보 수신도 동의 처리되었어요"</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">회원가입 — 화면별 상세 인터랙션</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <span class="flow">플로우: 이름 입력 → 주민등록번호 → 통신사 선택 → 휴대폰 번호 → 본인인증 동의 → 인증번호 → 가입 완료</span>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">이름 입력 (LO_012)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">초기 상태:</span> 한글 키보드 자동 노출 / Placeholder: "이름 입력"</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">삭제 버튼(X):</span> 1글자 이상 입력 시 노출 / X탭: 전체 삭제 + 포커스 유지</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">다음 버튼:</span> 1글자 이상 입력 시 활성화 → 주민등록번호 입력 화면 이동, 앞자리 자동 포커스</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">주민등록번호 입력 (LO_013)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">앞자리:</span> 6자리(YYMMDD), 완료 시 뒷자리 첫 번째 칸 자동 포커스</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">뒷자리:</span> 1자리만 입력, 나머지 6자리 마스킹(●●●●●●) 고정</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">다음 버튼:</span> 6+1자리 모두 입력 시 활성화 → 통신사 선택</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">통신사 선택 (LO_014, 015)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>화면 진입 시 바텀시트 자동 노출 → 선택 시 자동 닫힘 → 휴대폰 번호 입력으로 자동 이동</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">휴대폰 번호 입력 (LO_016)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">자동 포맷:</span> 010-1234-5678 하이픈 자동 적용 / 최대 11자리</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">본인인증하기:</span> 11자리 완료 시 활성화</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">본인인증 동의 바텀시트 (LO_017)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">전체 동의:</span> 필수 항목 전체 자동 체크 / 동의하기 버튼 활성화</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">동의하기 탭:</span> 유효성 검사 → 성공: 인증번호 발송 / 실패: al_044 팝업("입력된 정보가 올바르지 않습니다")</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">인증번호 입력 (LO_018)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">초기 상태:</span> 숫자 키패드 노출 / 타이머 02:59 시작</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">불일치:</span> 빨간 테두리 + "인증번호를 확인해주세요" / 삭제 시 에러 즉시 해제</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">타이머 만료:</span> 입력 필드 비활성화 / "인증번호 재전송" 버튼 노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">5회 실패:</span> 팝업 → 로그인 또는 어르신 위임안내 강제 이동</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">인증 성공:</span> 회원가입 완료 화면 / 체크 아이콘 Lottie 애니메이션 재생</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">요양인정번호 등록</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">접두어:</span> "L" 고정 표시 (삭제 불가) / 숫자 10자리만 입력 (예: L1234567890)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">유효기간:</span> YYYY.MM.DD 자동 포맷 / /, -, . 입력 시 .으로 통일</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">성공 시:</span> "등록이 완료되었습니다" 토스트 → 복지용구 주문 페이지 자동 이동</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">키보드:</span> 포커스 시 입력 필드가 키보드 위로 스크롤 (가림 방지)</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 홈 화면 ══ -->
+  <div class="sec" id="home">
+    <div class="sec-badge">홈 화면</div>
+    <h2 class="sec-h2">홈 화면 (HO_001)</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.01 · 프레임: UI/UX 개발 이관 가이드_홈 화면</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">상단 네비게이션 — 상태별 4가지</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>유저 상태</th><th>노출 내용</th><th>탭 동작</th></tr></thead>
+          <tbody>
+            <tr><td>비로그인</td><td>"지금 로그인하세요"</td><td>탭 → LO_004 로그인 화면</td></tr>
+            <tr><td>로그인 + 미등록</td><td>"{이름}님 반갑습니다" / 드롭다운 없음</td><td>—</td></tr>
+            <tr><td>어르신 2명 이상</td><td>"{어르신이름} ▾"</td><td>탭 → 어르신 선택 바텀시트</td></tr>
+            <tr><td>알림 뱃지</td><td>신규 알림 시 알림 버튼에 뱃지</td><td>알림 화면 진입 시 뱃지 해제</td></tr>
+          </tbody>
+        </table>
+        <div class="info" style="margin-top:6px">📌 어르신 변경 시 토스트: "어르신이 선택되었어요" 노출 + 개인화 영역 실시간 갱신</div>
+      </div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">개인화 영역 — 4가지 분기</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>유저 상태</th><th>개인화 영역 노출</th><th>상품 타입</th></tr></thead>
+          <tbody>
+            <tr><td>미등록 (유저 B)</td><td>"가족을 등록해 주세요" → 탭: FA_012 이동</td><td>인기상품</td></tr>
+            <tr><td>예비수급자 (유저 C)</td><td>"요양인정번호를 등록해 주세요" → 탭: 번호 등록 화면</td><td>인기상품 (15% 기준 가격)</td></tr>
+            <tr><td>수급자 (유저 D)</td><td>남은 급여 금액 표시 → 탭: WE_001 이동</td><td>맞춤상품 (본인부담률 적용)</td></tr>
+            <tr><td>수급자 유효기간 만료</td><td>만료 안내 / 재등록 유도 → FA_005</td><td>인기상품 (맞춤상품 미노출)</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">배너 영역</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">노출 조건:</span> 관리자 등록 배너만 (미등록 시 영역 자체 미노출)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">최대:</span> 5개 / 자동 롤링 5초 간격 / 배경 <span class="cd">#EEEEEE</span> 고정</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">이미지 규격:</span> 392×400px @2x (PNG)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">무한 루프:</span> 1→2→3→1 모든 전환 동일 방향(좌→우) / 되감기 없음 / 스와이프 후 5초 뒤 자동 롤링 재개</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">인기상품 / 맞춤상품 섹션</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">노출 개수:</span> 최소 2개 ~ 최대 9개</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">썸네일:</span> 디바이스 너비 크면 비율 유지하며 Scale up (왜곡 없음)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">성별 필터:</span> 여성 어르신 → 남성용 전용 상품(요실금팬티·미끄럼방지양말 등) 미노출</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">터치 영역:</span> 전체 카드 (썸네일 + 정보) / 상품명 1줄 초과 시 ... 처리</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">섹션 더보기:</span> 텍스트 링크 컴포넌트 사용 (버튼 컴포넌트 사용 금지 — 정렬 어긋남)</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">퀵메뉴 이동 경로</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>퀵메뉴</th><th>이동 화면</th><th>접근 조건</th></tr></thead>
+          <tbody>
+            <tr><td>전문가 상담</td><td>CO_001</td><td>비로그인 탭 시 al_009 로그인 유도</td></tr>
+            <tr><td>인정등급 예상 테스트</td><td>CO_011</td><td>전체 접근 가능</td></tr>
+            <tr><td>돌봄 시설찾기</td><td>CE_001</td><td>전체 접근 가능</td></tr>
+            <tr><td>요양비용 계산기</td><td>UT_001</td><td>전체 접근 가능</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">가족관계 프로필 이미지 매핑</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>그룹</th><th>해당 관계</th></tr></thead>
+          <tbody>
+            <tr><td>남성 어른 아바타</td><td>할아버지, 아버지, 배우자 아버지</td></tr>
+            <tr><td>여성 어른 아바타</td><td>할머니, 어머니, 배우자 어머니</td></tr>
+            <tr><td>성인(나) 아바타</td><td>나, 배우자, 형제자매</td></tr>
+            <tr><td>자녀 아바타</td><td>자녀</td></tr>
+          </tbody>
+        </table>
+        <div class="notice" style="margin-top:6px">⚠ FA_013 타이틀 이미지로 일괄 표시 금지 — 가족관계 기준으로 분기 적용</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ══ 상담하기 ══ -->
+  <div class="sec" id="consult">
+    <div class="sec-badge">상담하기</div>
+    <h2 class="sec-h2">상담하기 (CO001~)</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.01</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">스크롤 애니메이션 가이드</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="info">📌 스크롤 시 콘텐츠가 하단에서 상단으로 올라오며 Fade in</div>
+          <div class="rows" style="margin-top:8px">
+            <div class="row"><div class="row-icon"></div>1. 초기: 콘텐츠 화면 하단 밖 위치 (투명)</div>
+            <div class="row"><div class="row-icon"></div>2. 스크롤 다운: 뷰포트 진입</div>
+            <div class="row"><div class="row-icon"></div>3. 애니메이션: translateY 40px, Opacity 0→1, Duration <span class="cd">600ms</span>, ease-out</div>
+            <div class="row"><div class="row-icon"></div>4. 여러 요소 동시: 100ms씩 지연 순차 노출</div>
+          </div>
+          <div class="notice" style="margin-top:6px">⚠ 적용 화면: CO_002, CO_004, CO_005, CO_009, CO_011</div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">Flutter 구현 기준</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>기존 웹 CSS 애니메이션을 Flutter로 동일하게 구현</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">기존 동일 이미지:</span> 애니메이션 적용 / <span class="lbl">변경된 이미지:</span> 애니메이션 없이 고정</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 가족관리 ══ -->
+  <div class="sec" id="family">
+    <div class="sec-badge">가족관리</div>
+    <h2 class="sec-h2">가족관리 / 상담관리 (FA_001~)</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.17</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">가족 추가</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">GNB "등록" 버튼:</span> 어르신 0~3명 → 노출 / 4명 → 숨김</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">본인 중복 등록:</span> al_041 팝업 "이미 본인이 등록되어 있어요"</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">배우자 중복 등록:</span> al_042 팝업 "이미 배우자가 등록되어 있어요"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">빈 화면 (Empty State) & 더보기</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">위치:</span> 탭 컨테이너 내 상하좌우 중앙 정렬</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">적용:</span> 상담내역 없음 / 주문요청내역 없음</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">더보기 버튼</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">노출 조건:</span> 리스트 11건 이상</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">동작:</span> 탭 시 10건씩 추가 로드</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 복지용구 ══ -->
+  <div class="sec" id="welfare">
+    <div class="sec-badge">복지용구</div>
+    <h2 class="sec-h2">복지용구 주문</h2>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">어르신 선택 영역 (WE_001)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">단일 어르신:</span> 드롭다운 미노출</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">복수 어르신:</span> 드롭다운 화살표 노출 / 탭 → 어르신 선택 바텀시트</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">프로필 이미지:</span> 가족관계에 따라 이미지 변경 (홈 매핑 규칙 동일)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">관계 태그:</span> 이름 우측에 표시 (예: 배우자 어머니)</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">상품 리스트 분기 / 카드 (WE_001)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">수급자:</span> 맞춤상품 / 주문요청 가능 수량 노출</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">예비수급자·미등록·비로그인:</span> 인기상품 / 주문요청 가능 수량 미노출</div>
+        </div></div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">상품 카드</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">노출 개수:</span> 2개 ~ 9개 / 스와이프 3개 이상 시 활성화 / 한 화면 2개씩</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">썸네일:</span> 비율 유지 Scale up / 상품명 1줄 초과 시 ... / 전체 카드 터치 가능</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">잔여 급여 플로팅 배너 (WE_001)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">노출 조건:</span> 남은 지원금 1원 이상 + 수급자</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">디폴트:</span> 접힘 상태</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">펼치기:</span> height 자동 증가 <span class="cd">250ms ease-out</span> + 내부 콘텐츠 Fade In <span class="cd">150ms</span> (50ms 딜레이)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">접기:</span> height 감소 <span class="cd">200ms ease-in</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">화살표:</span> ∨ → ∧ 회전 <span class="cd">200ms</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">위치:</span> 화면 하단 고정, 탭바 위</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">BottomNavigation 연동 상세 타이밍</span><span class="acc-tc" style="font-size:10px;margin-left:8px">TC 확인</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">최상단:</span> BottomNavigation 노출 / 플로팅 배너 미노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">아래 스크롤:</span> BottomNavigation Slide Down <span class="cd">200ms</span> → <span class="cd">50ms</span> 딜레이 → 플로팅 배너 Slide Up <span class="cd">250ms</span> (두 요소 겹침 없음)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">위 스크롤:</span> BottomNavigation Slide Up <span class="cd">250ms</span> → 플로팅 배너 <span class="cd">50ms</span> 딜레이 후 BottomNavigation 높이만큼 위로 이동 (노출 유지)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">최상단 복귀:</span> BottomNavigation 노출 유지 / 플로팅 배너 Slide Down 미노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">bottom 위치값:</span> BottomNavigation(56px) + Android System Navigation Bar 높이 (WindowInsets 동적 적용)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">탭 메뉴 — 앵커 내비게이션 (WE_001)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">노출 시점:</span> 첫 번째 하위 카테고리 섹션 도달 시 상단 고정 (Sticky)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">탭 선택:</span> 해당 섹션 상단으로 스크롤 이동 (앵커 위치: 품목 섹션 타이틀 기준)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">스크롤 연동:</span> 현재 섹션 탭 활성화</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">카테고리별 상품 섹션 (WE_001)</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">노랑 박스:</span> 수급자 주문요청 불가 품목</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">파랑 박스:</span> 해당 카테고리 간단 설명</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">더보기 버튼:</span> 상품 5개 이상 시 노출</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">전체품목 (WE_004)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">좌우 메뉴 연동:</span> 왼쪽 탭 → 오른쪽 스크롤 / 오른쪽 스크롤 → 왼쪽 활성화 Fade in <span class="cd">200ms</span></div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">그리드:</span> 2열 고정(2×n), 왼쪽 정렬, aspect-ratio 1:1 유지</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">카테고리 텍스트:</span> 오토사이즈 적용 (폰트 배율 확대 시 개행 대신 자동 축소)</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">상품 목록 (WE_006)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">카테고리 칩:</span> 선택 시 맨 앞으로 이동 / 좌우 롤링 끊김 없이</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">그리드:</span> 2열 고정 / aspect-ratio 1:1 / 10단위 페이지 로딩</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">상단 드롭다운:</span> 헤더 ∨ 탭 → Slide down + Fade in <span class="cd">200ms</span> / 선택 시 대카테고리 갱신</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">복지용구 소개 (WE_007~10)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">칩 메뉴:</span> 탭 → 해당 카드 스크롤 / 선택 칩 맨 앞으로 이동</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">카드 스크롤:</span> 카드 상단 Sticky / 다음 카드 도달 시 이전 카드 밀려남 / 높이 80vh</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">버튼:</span> 상품 있음 → "상품 보러가기" 활성 / 없음 → "상품 준비중" 비활성 (버튼 항상 노출)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">영상:</span> 썸네일 탭 → 세로 영상 플레이어 / 최초 재생 시 가이드 오버레이 노출 / 위로 스와이프 → 다음 영상</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">무한 루프:</span> 마지막 영상 완료 → 첫 번째로 자동 복귀</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 반품/AS 신청 ══ -->
+  <div class="sec" id="returns">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div class="sec-badge" style="margin-bottom:0">복지용구 · Q2 2026</div>
+      <span style="font-size:11px;font-weight:700;background:#FF8120;color:#fff;padding:2px 8px;border-radius:4px;letter-spacing:.3px">NEW</span>
+    </div>
+    <h2 class="sec-h2">반품/AS 신청</h2>
+    <p class="sec-desc">최종 업데이트 : 2026.05.22 · 이로움돌봄 2.0 Q2 신규 기능 · 화면 ID: RE_001~, AS_001~</p>
+    <div class="sec-hr"></div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">진입 경로</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">더보기 &gt; 고객지원:</span> "반품 신청" (WE_036) / "A/S 신청" (WE_041)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">주문요청 상세(FA_001):</span> 하단 반품/AS 신청 버튼 (조건부 노출)</div>
+      </div></div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">공통 — 권한 요청</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">AOS:</span> 네이티브 팝업 전 사전 안내 팝업 먼저 노출 (카메라 → 저장공간 순서, 각각 별도) → 이후 네이티브 권한 팝업</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">iOS:</span> 사전 안내 없이 네이티브 팝업 바로 진입</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">영구 거부 (AOS/iOS 공통):</span> 기기 설정 이동 팝업 노출 (al_076)</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">공통 — 이미지 첨부</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <table class="spec-table">
+            <thead><tr><th>항목</th><th>반품</th><th>A/S</th></tr></thead>
+            <tbody>
+              <tr><td>첨부 최소</td><td>1장 이상 필수</td><td>2장 이상 필수</td></tr>
+              <tr><td>허용 형식</td><td colspan="2">JPEG, JPG, PNG</td></tr>
+              <tr><td>파일당 최대 용량</td><td colspan="2">10MB</td></tr>
+              <tr><td>최대 첨부 수</td><td colspan="2">5개</td></tr>
+            </tbody>
+          </table>
+          <div class="tc-note" style="margin-top:8px"><span>📌</span> 이미지 첨부 바텀시트 UX 라이팅: 타이틀 "사진 첨부" / 항목 "앨범에서 선택" · "카메라로 촬영" · "취소"</div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">알럿 목록</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">al_070:</span> 이미지 최대 5개 초과</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">al_071:</span> 파일 형식 오류 (JPEG/JPG/PNG만 허용)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">al_072:</span> 파일당 10MB 초과</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">반품/AS 상품 선택 (RE_001 / AS_001)</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">목록 노출 조건:</span> 배송완료 상태 + 배송완료일 기준 <strong>14일 이내</strong> 상품만</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">신청 가능 상품 없을 경우:</span> Empty State 노출, 신청하기 버튼 비활성화</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">복수 선택 제약:</span> 같은 주문서 번호 내에서만 복수 선택 가능 (al_069)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">수량 선택:</span> 부분 반품 지원 / 수량 변경 시 바코드 입력 필드 자동 추가·삭제</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">바코드 등록 플로우</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">스캔 플로우</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>카메라 권한 확인 → 권한 팝업 → 허용 시 스캐너 진입(WE_045) → 성공(WE_046) / 실패(WE_047 수동입력 유도)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">Flutter 패키지:</span> <span class="cd">mobile_scanner</span> (Google ML Kit 기반)</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">직접 입력 UX</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">진입 시:</span> 가이드 이미지(샘플 바코드 + 뒷자리 위치 표시) 먼저 노출, 자동 포커스 지양</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">입력 필드 탭 시:</span> 키패드 올라옴 + 가이드 이미지 숨김 처리</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">플레이스홀더:</span> "마지막 12자리 입력"</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">바코드 카드 귀속 원칙</span></div>
+          <div class="notice">⚠ 바코드 등록 완료 영역은 반드시 해당 상품 카드 내부에 귀속. 카드 밖에 노출 시 어느 상품의 바코드인지 불명확해짐</div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">스캔 결과 UX 라이팅</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">스캔 성공 버튼:</span> "이 번호로 등록" / "다시 등록"</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">스캔 실패 문구:</span> "바코드를 인식하지 못했어요. 다시 시도하거나 직접 입력해 주세요."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">반품/AS 상태값 체계</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">반품 상태값</span></div>
+          <table class="spec-table">
+            <thead><tr><th>상태값</th><th>설명</th></tr></thead>
+            <tbody>
+              <tr><td>반품접수</td><td>신청 완료, 사업소 미확인</td></tr>
+              <tr><td>반품접수 취소</td><td>사용자 직접 취소 (재신청 가능)</td></tr>
+              <tr><td>반품접수 확인</td><td>사업소 확인 완료</td></tr>
+              <tr><td>부재중</td><td>사업소 전화 연결 실패</td></tr>
+              <tr><td>반품접수 불가</td><td>사업소 판정 불가 (재신청 가능)</td></tr>
+              <tr><td>반품처리중</td><td>진행 중</td></tr>
+              <tr><td>반품완료</td><td>처리 완료</td></tr>
+              <tr><td>반품불가</td><td>최종 불가 판정</td></tr>
+            </tbody>
+          </table>
+          <div class="info" style="margin-top:6px">📌 A/S도 동일 구조: A/S접수 → A/S접수확인 → A/S진행중 → A/S완료/불가</div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">신청 가능 대상 (재신청 허용 상태)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">반품:</span> 배송완료 / 반품접수 취소 / 반품접수 불가 / 반품불가</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">A/S:</span> 배송완료 / A/S접수 취소 / A/S접수 불가 / A/S불가</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">반품/AS 상세 (RE_009 / AS_007)</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">진행 상태 바</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">현재 단계:</span> 활성 (오렌지)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">이전 단계:</span> 완료 표시</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">이후 단계:</span> 비활성</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">반품불가/A/S불가 상태:</span> 마지막 단계 레이블 "불가"로 변경</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">다중 상품 불일치 시:</span> 진행 중 상태값 중 가장 앞단계 기준 표시</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">신청 취소 버튼</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">노출:</span> 반품접수 / A/S접수 상태에서만</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">미노출:</span> 이후 단계 진입 시</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">연락처 / 사업소</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">신청자 연락처:</span> 기본 마스킹 노출 (예: 010-****-2222) / 탭 시 전체 번호 확인</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">사업소 연락처:</span> 탭 시 디바이스 전화 앱 바로 연결</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">특수 케이스 UI</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">사업소 직접 접수:</span> "사업소가 직접 접수한 내역입니다." 안내 문구 해당 아이템 내 별도 노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">최종/최초 신청 구분:</span> 사업소 확인 이후 바코드 변경 시 최종·최초 신청 각각 분리 노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">반품불가/AS불가 안내문구:</span> 사업소가 입력한 안내 문구 노출 영역 별도 제공</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">신청 완료 문구</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">노출 조건:</span> 신청 후 바로 상세 화면으로 넘어온 경우만 상단에 완료 문구 노출 (목록 진입 시 미노출)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">반품:</span> "반품 신청이 완료되었어요"</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">A/S:</span> "A/S 신청이 완료되었어요"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">주문요청 상세 내 반품/AS 버튼 노출 조건 (FA_001)</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>조건</th><th>반품 신청 버튼</th><th>A/S 신청 버튼</th></tr></thead>
+          <tbody>
+            <tr><td>반품 기한(14일) 이내 + A/S 기한 이내</td><td>노출</td><td>노출</td></tr>
+            <tr><td>반품 기한 초과</td><td>미노출</td><td>노출</td></tr>
+            <tr><td>반품 기한 초과 + A/S 기한 초과</td><td>미노출</td><td>미노출</td></tr>
+            <tr><td>반품 전체 완료된 상품</td><td>미노출</td><td>조건에 따라</td></tr>
+            <tr><td>A/S 신청 불가 카테고리</td><td>조건에 따라</td><td>미노출</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">주문요청 목록 표시 규칙</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div>반품 상태값이 1개라도 있으면 대표 상태값을 반품 상태값으로 표시</div>
+        <div class="row"><div class="row-icon"></div>반품 상태값은 기존 주문 상태값 정렬에서 최우선 노출</div>
+      </div></div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">알럿 목록 (al_068~al_076)</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>ID</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td>al_068</td><td>반품 가능 상품 없음</td></tr>
+            <tr><td>al_069</td><td>같은 주문서 번호 내 복수 선택만 가능</td></tr>
+            <tr><td>al_070</td><td>이미지 최대 5개 초과</td></tr>
+            <tr><td>al_071</td><td>파일 형식 오류 (JPEG/JPG/PNG만 허용)</td></tr>
+            <tr><td>al_072</td><td>파일당 10MB 초과</td></tr>
+            <tr><td>al_073</td><td>약관 미동의</td></tr>
+            <tr><td>al_074</td><td>주문 서비스 종료 기관</td></tr>
+            <tr><td>al_075</td><td>부재중 → 사업소 전화 유도</td></tr>
+            <tr><td>al_076</td><td>카메라 권한 꺼짐 → 설정 유도</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ══ 시설찾기 ══ -->
+  <div class="sec" id="facility">
+    <div class="sec-badge">시설찾기</div>
+    <h2 class="sec-h2">시설찾기 / 의료기관 찾기 / 계산기</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.12</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">아코디언 — 기본 동작</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">디폴트:</span> 방문요양만 펼쳐진 상태로 진입 / 나머지 접힘</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">아코디언:</span> 한 번에 하나만 펼침 (기존 닫힘 0.3s → 새 항목 펼침 0.3s 순차)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">화살표:</span> 접힘 ∨ / 펼침 ∧ / 회전 <span class="cd">0.2s</span></div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">스크롤 처리:</span> 항목 펼침 시 펼친 콘텐츠 상단 보이도록 자동 스크롤</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">검색 / 지역 / 목록 로딩</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">검색 실행:</span> 최소 2글자 이상 / 1글자 미실행 / 입력 중 X 버튼 노출</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">지역 표기:</span> 시/도명 2글자 축약 (서울특별시 → 서울)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">초기 로딩:</span> 첫 10개 / 하단 도달 시 추가 10개 / 로딩 중 Skeleton UI</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">무한스크롤 스피너:</span> Lottie 40×40px 중앙 / "불러오는 중"</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">시설 상세 (CE_004)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">이미지 스와이프:</span> 좌/우 수동 스와이프 / 자동 재생 없음 / 탭 → 풀팝업 슬라이드 뷰어</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">사진 없을 시:</span> 일러스트 이미지 대체</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">탭 Sticky + 플로팅 버튼:</span> 동시 Slide Up <span class="cd">300ms</span> (플로팅 버튼 Type C 적용)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">상담 신청하기:</span> 파트너 인증 시설만 노출</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">전화 연결:</span> 전화 버튼 탭 → 디바이스 전화 앱 실행, 번호 자동 입력</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">지도보기 — 마커 & 버튼 인터랙션</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">마커 탭 동작 순서</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>① 자동 패닝 → 마커 화면 가운데 이동 (<span class="cd">0.3s ease-in-out</span>)</div>
+            <div class="row"><div class="row-icon"></div>② 마커 아이콘 fade out (<span class="cd">0.2s</span>)</div>
+            <div class="row"><div class="row-icon"></div>③ 시설명 말풍선 fade in (<span class="cd">0.2s</span>)</div>
+            <div class="row"><div class="row-icon"></div>④ 하단 시설 정보 카드 slide-up (<span class="cd">0.3s ease-out</span>)</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">"이 위치에서 검색" 버튼</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>드래그 완료 시 fade-in <span class="cd">0.3s</span> / 버튼 노출 시 "목록보기" 좌측으로 slide <span class="cd">0.2s</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">검색결과 100개 초과 배너:</span> 지도 최상단 고정 / 드래그·줌 시 fade out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 더보기 ══ -->
+  <div class="sec" id="more">
+    <div class="sec-badge">더보기</div>
+    <h2 class="sec-h2">더보기 (MY_001)</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.03</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">상태별 분기 / 터치 영역</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">비로그인:</span> 상단 로그인 버튼 노출 (회원명 대신) / 콘텐츠·고객지원·약관 접근 가능</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">로그인:</span> '{이름}님' 표시 → 탭: MY_002 / 가족관리 → FA_001 / 상담하기 → CO_001</div>
+        </div></div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">터치 영역 높이</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">홍길동 / 로그인 영역:</span> <span class="cd">62px</span></div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">메뉴 (가족관리, 가이드, 상담하기):</span> <span class="cd">84px</span> (아이콘 + 텍스트 포함)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">알림 설정 (MY_017)</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">야간 혜택 ON:</span> 마케팅(앱푸시·문자·메일) 자동 ON</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">마케팅 ON 토스트:</span> "이벤트 및 마케팅 정보 수신에 동의하셨어요"</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">마케팅 OFF 토스트:</span> "이벤트 및 마케팅 정보 수신 동의가 해제되었어요"</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">텍스트 말줄임 처리</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">공지·FAQ 제목:</span> 최대 2줄 / 초과 시 ... 처리</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">회원명:</span> 8자 이하 전체 표시 / 9자 이상 8자 + ... 처리</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">탈퇴 사유 선택 — Radio 타입으로 변경</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">TextOnly:</span> 체크박스 + 상세보기 (약관 동의, 알림 설정)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">Checkbox:</span> 여러 개 선택 (필터)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">Radio:</span> 단일 선택 — 탈퇴 사유</div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <!-- ══ 고객센터 ══ -->
+  <div class="sec" id="cs">
+    <div class="sec-badge">고객센터</div>
+    <h2 class="sec-h2">고객센터 / 어르신복지 (웹뷰)</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.12</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">콘텐츠 상세 — 제목 처리</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">진입 시:</span> 네비게이션 바 타이틀 미노출</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">스크롤 다운:</span> 본문 제목 화면 밖 → GNB에 제목 표시</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">스크롤 업:</span> 본문 제목 다시 보이면 GNB 제목 숨김</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">타이틀 전환:</span> fade <span class="cd">0.2s</span> / 초과 시 말줄임</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">Lazy Loading:</span> 초기 10개 → 스크롤 시 추가 로딩</div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <!-- ══ 알림 ══ -->
+  <div class="sec" id="notice">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div class="sec-badge" style="margin-bottom:0">알림</div>
+      <span style="font-size:11px;font-weight:700;background:#FF8120;color:#fff;padding:2px 8px;border-radius:4px;letter-spacing:.3px">NEW</span>
+    </div>
+    <h2 class="sec-h2">알림</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.08</p>
+    <div class="sec-hr"></div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">어르신별 셀렉트박스 (신규)</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">컴포넌트:</span> 투명 셀렉트박스 (신규 컴포넌트)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">노출 조건:</span> 어르신 2명 이상 등록 회원에게만 노출</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">전환 후 토스트:</span> "{어르신이름} 어르신으로 전환되었어요."</div>
+      </div></div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">전체삭제 버튼</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div>삭제 확인 팝업 → 전체 알림 삭제 후 토스트</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">토스트 문구:</span> "모든 알림이 삭제되었어요."</div>
+      </div></div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">알림 카드 구조</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div>구분 아이콘 + 타이틀 (1줄 제한, 초과 시 ...) + 발송시점</div>
+          <div class="row"><div class="row-icon"></div>바디 텍스트 (3줄 제한, 초과 시 ...)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">미읽음 배경:</span> <span class="cd">#FFF5E6</span> / <span class="lbl">읽음 배경:</span> <span class="cd">#FFFFFF</span></div>
+        </div></div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">썸네일 UI (신규)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">노출 대상:</span> 복지용구 주문요청 / 반품 / A/S 각 접수 상태에서만 노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">이미지 없을 시:</span> 썸네일 영역 자체 미노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">대표 상품명:</span> 상품명 오름차순 첫 번째</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">상품 1개:</span> 썸네일 1개</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">상품 2~3개:</span> 이미지 2~3개 (전체 노출)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">상품 4개 이상:</span> 이미지 2개 + "+N 텍스트" (N = 전체 수 - 2)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">발송시점 표시 형식</span></div>
+      <div class="acc-body"><div class="sub">
+        <table class="spec-table">
+          <thead><tr><th>조건</th><th>형식</th></tr></thead>
+          <tbody>
+            <tr><td>당일</td><td>오전/오후 HH:MM</td></tr>
+            <tr><td>당일 제외 동일 연도</td><td>MM월 DD일</td></tr>
+            <tr><td>이전 연도</td><td>YYYY.MM.DD</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">알림 구분 아이콘 유형</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div>상담신청, 수급자 등록</div>
+        <div class="row"><div class="row-icon"></div>주문요청</div>
+        <div class="row"><div class="row-icon"></div>반품/AS 신청, 기타</div>
+        <div class="row"><div class="row-icon"></div>이벤트</div>
+        <div class="row"><div class="row-icon"></div>공지 (공지글 등록 시 추후 사용 예정)</div>
+        <div class="notice" style="margin-top:4px">⚠ 아이콘 상세 규격은 기획 문서 참조</div>
+      </div></div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">목록 동작 규칙</span></div>
+      <div class="acc-body">
+        <div class="sub"><div class="rows">
+          <div class="row"><div class="row-icon"></div><span class="lbl">읽음 처리:</span> 목록 진입 시 모든 알림 일괄 읽음 처리</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">카드 탭:</span> 해당 딥링크 페이지 이동 / 오류 시 "해당 정보를 찾을 수 없어요." 팝업</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">정렬:</span> 발송시각 내림차순 / 동일 시 바디 텍스트 오름차순</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">페이징:</span> 10건씩 노출 → 스크롤 시 10개씩 추가 로딩</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">보관기간:</span> 90일 / 초과 알림 매일 00시 자동 삭제 (등록 시점 기준 TTL)</div>
+          <div class="row"><div class="row-icon"></div><span class="lbl">하단 고정 문구:</span> "최근 90일 알림 건만 확인 가능합니다."</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">상태별 화면 분기</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">비로그인:</span> "로그인 후 알림을 확인할 수 있어요." + 로그인 버튼</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">로그인 + 알림 없음:</span> "받은 알림이 없어요." Empty State 중앙 정렬</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">로그인 + 알림 있음:</span> 목록 노출</div>
+      </div></div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">앱 뱃지 카운트 (신규)</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div>앱푸시 발송 건만 카운트</div>
+        <div class="row"><div class="row-icon"></div>앱푸시 없는 알림은 뱃지 카운트 제외</div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <!-- ══ 장기요양 ══ -->
+  <div class="sec" id="ltc">
+    <div class="sec-badge">장기요양</div>
+    <h2 class="sec-h2">장기요양 가이드 (웹뷰)</h2>
+    <p class="sec-desc">최종 업데이트 : 2026.01.06</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">네비게이션 타이틀 처리</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">진입 시:</span> GNB 타이틀 미노출</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">스크롤 다운:</span> 상단 비주얼 영역이 화면 밖 → GNB 타이틀 표시 (Fade 0.2s)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">스크롤 업:</span> 비주얼 영역 다시 보이면 GNB 타이틀 숨김</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">탭 클릭 시:</span> 해당 탭 타이틀로 GNB 즉시 변경 (Fade 0.2s)</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">'받을 수 있는 혜택' 탭 인터랙션</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">탭 개수:</span> 4개 (재가급여, 복지용구, 시설급여, 가족요양)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">탭 클릭:</span> 해당 콘텐츠 영역으로 smooth scroll (<span class="cd">ease-in-out, 300ms</span>)</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">스크롤 연동:</span> 현재 섹션 탭 자동 활성화</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">활성 탭 이동:</span> 항상 첫 번째 위치로 이동 (transition <span class="cd">200ms</span>)</div>
+      </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">노인성 질병 코드 — 폰트 변경</span></div>
+      <div class="acc-body"><div class="sub"><div class="rows">
+        <div class="row"><div class="row-icon"></div><span class="lbl">변경 대상:</span> 질병 코드 명만 Noto Sans 적용</div>
+        <div class="row"><div class="row-icon"></div><span class="lbl">이유:</span> SUIT: 'i' / Noto Sans: 'I' — 숫자와 구분 필요</div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <!-- ══ 기타 ══ -->
+  <div class="sec" id="etc">
+    <div class="sec-badge">기타</div>
+    <h2 class="sec-h2">기타 — 오류 화면 / 로딩 정의</h2>
+    <p class="sec-desc">최종 업데이트 : 2025.12.11</p>
+    <div class="sec-hr"></div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">오류 화면 사용 정의</span><span class="acc-tc">TC 확인</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">네트워크 연결 오류</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>문구: "네트워크가 연결되지 않았어요. Wi-Fi 또는 데이터를 확인해주세요"</div>
+            <div class="row"><div class="row-icon"></div>네트워크 연결 끊김 감지 시 노출</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">콘텐츠 로딩 실패</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>문구: "화면을 불러오지 못했어요"</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">적용 상황:</span> 이동 불가 화면 / 삭제된 콘텐츠·수급자 조회 / 타인 수급자·상담·주문 조회 / API 실패 / 타임아웃</div>
+            <div class="row"><div class="row-icon"></div>재시도 또는 뒤로가기 버튼 노출</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /max -->
+</main>
+
+<footer class="footer">
+  이로움돌봄 UI/UX 개발 이관 가이드 v2.1 · Figma MCP 직접 추출 + TC v1(2026.02.23) 검증 반영 · 담당: 이진희
+</footer>
+
+<script>
+// ── 스크롤 이동 ──
+function scrollToSec(id){
+  var el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── 메뉴 ──
+function closeMenu(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('menuBtn').addEventListener('click',function(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+});
+
+// ── 업데이트 이력 패널 ──
+function toggleChangelog(){
+  document.getElementById('changelogPanel').classList.toggle('open');
+}
+
+// ── 스크롤 인 애니메이션 ──
+var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('vis')});},{threshold:.04});
+document.querySelectorAll('.sec').forEach(function(s){obs.observe(s);});
+
+// ── 사이드바 활성 하이라이트 ──
+var secs=[].slice.call(document.querySelectorAll('.sec[id]'));
+window.addEventListener('scroll',function(){
+  var scrollY=window.scrollY;
+  var cur='';
+  secs.forEach(function(s){if(scrollY>=s.offsetTop-80)cur=s.id;});
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    var onclick=n.getAttribute('onclick')||'';
+    n.classList.toggle('on',onclick.indexOf("'"+cur+"'")>-1);
+  });
+},{passive:true});
+
+// ── 검색 기능 ──
+var matches=[];
+var matchIdx=0;
+var lastQuery='';
+
+function buildTextMap(){
+  var main=document.querySelector('.main');
+  // mark 태그 초기화
+  main.querySelectorAll('mark.sh').forEach(function(m){
+    m.outerHTML=m.innerHTML;
+  });
+}
+
+function doSearch(){
+  var q=document.getElementById('searchInput').value.trim();
+  var clearBtn=document.getElementById('searchClear');
+  clearBtn.style.display=q?'block':'none';
+
+  // 기존 하이라이트 제거
+  document.querySelectorAll('mark.sh').forEach(function(m){
+    var t=document.createTextNode(m.textContent);
+    m.parentNode.replaceChild(t,m);
+  });
+  // 인접 텍스트 노드 병합
+  document.querySelector('.main').normalize();
+
+  matches=[];
+  document.getElementById('searchCount').textContent='';
+  document.getElementById('searchNav').style.display='none';
+
+  if(!q||q.length<1){return;}
+
+  // 텍스트 노드 탐색
+  var walker=document.createTreeWalker(
+    document.querySelector('.main'),
+    NodeFilter.SHOW_TEXT,
+    {acceptNode:function(n){
+      var p=n.parentNode;
+      if(!p)return NodeFilter.FILTER_REJECT;
+      var tag=p.tagName&&p.tagName.toLowerCase();
+      if(tag==='script'||tag==='style')return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }}
+  );
+  var nodes=[];
+  var node;
+  while((node=walker.nextNode()))nodes.push(node);
+
+  var re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
+  nodes.forEach(function(tn){
+    var text=tn.textContent;
+    var m;
+    var last=0;
+    var frag=document.createDocumentFragment();
+    var found=false;
+    while((m=re.exec(text))!==null){
+      found=true;
+      if(m.index>last)frag.appendChild(document.createTextNode(text.slice(last,m.index)));
+      var mark=document.createElement('mark');
+      mark.className='sh';
+      mark.textContent=m[0];
+      frag.appendChild(mark);
+      matches.push(mark);
+      last=m.index+m[0].length;
+    }
+    if(found){
+      if(last<text.length)frag.appendChild(document.createTextNode(text.slice(last)));
+      tn.parentNode.replaceChild(frag,tn);
+    }
+    re.lastIndex=0;
+  });
+
+  if(matches.length>0){
+    matchIdx=0;
+    highlightCurrent();
+    document.getElementById('searchCount').textContent=matches.length+'개';
+    document.getElementById('searchNav').style.display='flex';
+  } else {
+    document.getElementById('searchCount').textContent='결과 없음';
+  }
+}
+
+function highlightCurrent(){
+  matches.forEach(function(m){m.classList.remove('cur');});
+  if(matches[matchIdx]){
+    matches[matchIdx].classList.add('cur');
+    matches[matchIdx].scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+function moveMatch(dir){
+  if(!matches.length)return;
+  matchIdx=(matchIdx+dir+matches.length)%matches.length;
+  highlightCurrent();
+  document.getElementById('searchCount').textContent=(matchIdx+1)+'/'+matches.length;
+}
+
+var searchTimer;
+document.getElementById('searchInput').addEventListener('input',function(){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(doSearch,300);
+});
+document.getElementById('searchInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){moveMatch(e.shiftKey?-1:1);}
+  if(e.key==='Escape'){
+    this.value='';
+    doSearch();
+    document.getElementById('searchClear').style.display='none';
+  }
+});
+document.getElementById('searchClear').addEventListener('click',function(){
+  document.getElementById('searchInput').value='';
+  doSearch();
+  this.style.display='none';
+});
+</script>
+</body>
+</html>
