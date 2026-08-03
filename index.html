@@ -239,8 +239,8 @@ mark.sh.cur{background:#F59E0B;outline:2px solid #F59E0B;border-radius:2px}
   <button class="tb-search-icon" id="mobileSearchBtn" onclick="openMobileSearch()" aria-label="검색">🔍</button>
   <div class="tb-right">
     <button class="changelog-btn" onclick="toggleChangelog()">업데이트 이력</button>
-    <span class="tb-meta">2026.06.12</span>
-    <span class="tb-ver">v2.4</span>
+    <span class="tb-meta">2026.07.06</span>
+    <span class="tb-ver">v2.5</span>
   </div>
 </div>
 
@@ -251,6 +251,13 @@ mark.sh.cur{background:#F59E0B;outline:2px solid #F59E0B;border-radius:2px}
     <button class="cl-close" onclick="toggleChangelog()">✕</button>
   </div>
   <div class="cl-body">
+    <div class="cl-entry">
+      <div class="cl-date">2026.07.06</div>
+      <div class="cl-ver">v2.5</div>
+      <div class="cl-items">
+        <div class="cl-item"><span class="cl-tag">로그인</span>어르신 위임 동의 UI 변경 (스크롤 완료 시 버튼 활성화, 약관 연속 노출) 추가</div>
+      </div>
+    </div>
     <div class="cl-entry">
       <div class="cl-date">2026.06.12</div>
       <div class="cl-ver">v2.4</div>
@@ -792,6 +799,27 @@ mark.sh.cur{background:#F59E0B;outline:2px solid #F59E0B;border-radius:2px}
         <div class="row"><div class="row-icon"></div><span class="lbl">야간 혜택 동의 체크 시:</span> 마케팅(앱푸시·문자·메일) <strong>자동 체크</strong></div>
         <div class="row"><div class="row-icon"></div><span class="lbl">토스트:</span> "야간 혜택 동의로 이벤트 및 마케팅 정보 수신도 동의 처리되었어요"</div>
       </div></div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">어르신 위임 동의 UI 변경</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">동의 버튼 (스크롤 완료 시 활성화)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">비활성:</span> 약관 본문 최하단 스크롤 완료 전 (회색, 탭 불가)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">활성:</span> 최하단 스크롤 완료 시 (활성화 버튼 전환 · 한 번 활성 후 유지)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">예외:</span> 본문이 짧아 스크롤이 없으면 진입 즉시 활성</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">진입 &amp; 연속 노출</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">전체 동의하기 체크:</span> 약관 연속 노출 (동의 시 다음 약관 자동 이동)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">일부 미동의:</span> 미동의 약관만 순차 노출</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">개별 행 탭:</span> 해당 약관만 단독 노출</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="acc">
       <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">회원가입 — 화면별 상세 인터랙션</span><span class="acc-tc">TC 확인</span></div>
