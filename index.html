@@ -239,8 +239,8 @@ mark.sh.cur{background:#F59E0B;outline:2px solid #F59E0B;border-radius:2px}
   <button class="tb-search-icon" id="mobileSearchBtn" onclick="openMobileSearch()" aria-label="검색">🔍</button>
   <div class="tb-right">
     <button class="changelog-btn" onclick="toggleChangelog()">업데이트 이력</button>
-    <span class="tb-meta">2026.06.05</span>
-    <span class="tb-ver">v2.3</span>
+    <span class="tb-meta">2026.06.12</span>
+    <span class="tb-ver">v2.4</span>
   </div>
 </div>
 
@@ -251,6 +251,13 @@ mark.sh.cur{background:#F59E0B;outline:2px solid #F59E0B;border-radius:2px}
     <button class="cl-close" onclick="toggleChangelog()">✕</button>
   </div>
   <div class="cl-body">
+    <div class="cl-entry">
+      <div class="cl-date">2026.06.12</div>
+      <div class="cl-ver">v2.4</div>
+      <div class="cl-items">
+        <div class="cl-item"><span class="cl-tag">복지용구</span>상품 운영 뱃지 스펙 추가 (타입/노출 위치/등록 방식)</div>
+      </div>
+    </div>
     <div class="cl-entry">
       <div class="cl-date">2026.06.05</div>
       <div class="cl-ver">v2.3</div>
@@ -1032,6 +1039,38 @@ mark.sh.cur{background:#F59E0B;outline:2px solid #F59E0B;border-radius:2px}
           <div class="rows">
             <div class="row"><div class="row-icon"></div><span class="lbl">노출 개수:</span> 2개 ~ 9개 / 스와이프 3개 이상 시 활성화 / 한 화면 2개씩</div>
             <div class="row"><div class="row-icon"></div><span class="lbl">썸네일:</span> 비율 유지 Scale up / 상품명 1줄 초과 시 ... / 전체 카드 터치 가능</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd"><div class="acc-bar"></div><span class="acc-title">상품 운영 뱃지</span></div>
+      <div class="acc-body">
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">뱃지 스펙</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">타입:</span> 단일 타입, 상품당 1개만 등록 가능</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">위치:</span> 상품 썸네일 우측 상단</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">배경:</span> #1A1A1A (다크블랙), 텍스트: 화이트</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">형태:</span> 라운드, 패딩 8px</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">텍스트:</span> 최대 5자</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">노출 위치 (4곳 동일 적용)</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div>홈 &gt; 맞춤/인기상품</div>
+            <div class="row"><div class="row-icon"></div>복지용구 홈 &gt; 맞춤/인기상품</div>
+            <div class="row"><div class="row-icon"></div>복지용구 홈 &gt; 전체 품목 목록</div>
+            <div class="row"><div class="row-icon"></div>복지용구 카테고리 상세 &gt; 상품 목록</div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-hd"><div class="sub-dot"></div><span class="sub-title">등록 방식</span></div>
+          <div class="rows">
+            <div class="row"><div class="row-icon"></div><span class="lbl">등록 주체:</span> 돌봄 ADMIN, 운영자 직접 등록</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">설정 가능 항목:</span> 텍스트만 (색상·위치·크기 변경 불가)</div>
+            <div class="row"><div class="row-icon"></div><span class="lbl">미등록 시:</span> 뱃지 영역 미노출</div>
           </div>
         </div>
       </div>
