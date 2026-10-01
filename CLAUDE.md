@@ -1,7 +1,7 @@
 # 이로움돌봄 v2.0 — UI/UX 개발 이관 가이드
 
 개발팀에 전달하는 핸드오프 문서. 단일 파일 `index.html`(빌드 없음, GitHub에 그대로 배포).
-담당: 이진희
+담당: 이진희 · 라이브: https://eroum-dolbom-guide.netlify.app/
 
 ## 기준 자료 (Figma)
 
